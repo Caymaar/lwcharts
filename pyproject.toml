@@ -4,7 +4,7 @@ build-backend = "uv_build"
 
 [project]
 name = "lwcharts"
-version = "0.1.0"
+version = "0.2.0"
 description = "Lightweight Python wrapper for TradingView's lightweight-charts"
 readme = "README.md"
 authors = [{ name = "Caymaar", email = "julesmourgues@gmail.com" }]

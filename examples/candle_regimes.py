@@ -45,7 +45,7 @@ chart = (
     .line(ema_20,  name="EMA 20",  color="#f0b429", width=1)
     .line(ema_100, name="EMA 100", color="#a5b4fc", width=2, style="dashed")
     .bg_zones_from_series(regime, palette)
-    .volume(df)
+    .volume(df, position="overlay")
     .add_subplot(
         Subplot(height_ratio=0.18, label="RSI(14)", y_min=0, y_max=100)
         .line(rsi, color="#58a6ff", width=1)

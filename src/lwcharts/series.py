@@ -186,10 +186,10 @@ class VolumeOverlayDef:
             "name": "Volume",
             "data": self.data,
             "options": {
-                "priceScaleId": "volume",
+                "priceScaleId": "vol",
                 "priceFormat": {"type": "volume"},
-                "scaleMargins": {"top": 0.75, "bottom": 0},
-                "lastValueVisible": False,
-                "priceLineVisible": False,
+                # "scaleMargins": {"top": 0.25, "bottom": 0},
+                # "lastValueVisible": False,
+                # "priceLineVisible": False,
             },
         }

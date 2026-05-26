@@ -194,7 +194,7 @@ class Chart:
         df: pd.DataFrame,
         col: str = "volume",
         time: str | None = None,
-        position: Literal["overlay", "pane"] = "pane",
+        position: Literal["overlay", "pane"] = "overlay",
         up_color: str = "rgba(38,166,154,0.5)",
         down_color: str = "rgba(239,83,80,0.5)",
     ) -> "Chart":
