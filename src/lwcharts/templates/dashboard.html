@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>__TITLE__</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; min-height: 100vh; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", monospace; background: #0d1117; }
+    body.light { background: #f6f8fa; }
+    #dash-header { padding: 10px 16px; }
+    #dash-title { font-size: 14px; font-weight: 600; color: #c9d1d9; }
+    body.light #dash-title { color: #24292f; }
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(__COLS__, 1fr);
+      gap: 4px;
+      padding: 4px;
+    }
+    .chart-cell { position: relative; min-width: 0; overflow: hidden; }
+    .cell-title { font-size: 12px; font-weight: 500; color: #c9d1d9; padding: 4px 8px; }
+    body.light .cell-title { color: #24292f; }
+    .ohlcv-bar { font-size: 11px; font-family: monospace; color: #8b949e; padding: 2px 8px 4px; min-height: 18px; }
+    .pane-label {
+      position: absolute; left: 12px; z-index: 10;
+      font-size: 11px; color: #8b949e; pointer-events: none; user-select: none;
+    }
+  </style>
+  __LW_SCRIPT__
+</head>
+<body>
+<div id="dash-header"><span id="dash-title">__TITLE__</span></div>
+<div id="grid"></div>
+
+<script>
+(function () {
+    if ('__THEME__' === 'light') document.body.classList.add('light');
+
+    const CHARTS = __DASHBOARD_CONFIG__;
+
+    const THEMES = {
+        dark: {
+            layout: {
+                background: { type: 'solid', color: '#0d1117' },
+                textColor: '#8b949e',
+                panes: { separatorColor: '#21262d', separatorHoverColor: '#30363d', enableResize: true }
+            },
+            grid: { vertLines: { color: '#21262d' }, horzLines: { color: '#21262d' } },
+            crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+            rightPriceScale: { borderColor: '#21262d' },
+            timeScale: { borderColor: '#21262d', timeVisible: true, secondsVisible: false },
+        },
+        light: {
+            layout: {
+                background: { type: 'solid', color: '#ffffff' },
+                textColor: '#24292f',
+                panes: { separatorColor: '#e1e4e8', separatorHoverColor: '#d0d7de', enableResize: true }
+            },
+            grid: { vertLines: { color: '#e1e4e8' }, horzLines: { color: '#e1e4e8' } },
+            crosshair: { mode: LightweightCharts.CrosshairMode.Normal },
+            rightPriceScale: { borderColor: '#e1e4e8' },
+            timeScale: { borderColor: '#e1e4e8', timeVisible: true, secondsVisible: false },
+        }
+    };
+
+    const grid = document.getElementById('grid');
+
+    CHARTS.forEach((C, chartIdx) => {
+        // build cell
+        const cell = document.createElement('div');
+        cell.className = 'chart-cell';
+        cell.id = 'cell-' + chartIdx;
+
+        const titleEl = document.createElement('div');
+        titleEl.className = 'cell-title';
+        titleEl.textContent = C.title;
+        cell.appendChild(titleEl);
+
+        const ohlcvEl = document.createElement('div');
+        ohlcvEl.className = 'ohlcv-bar';
+        cell.appendChild(ohlcvEl);
+
+        const container = document.createElement('div');
+        container.id = 'chart-' + chartIdx;
+        container.style.width = '100%';
+        cell.appendChild(container);
+
+        grid.appendChild(cell);
+
+        const theme = THEMES[C.theme] || THEMES.dark;
+        const chart = LightweightCharts.createChart(container, {
+            width: container.clientWidth,
+            height: C.totalHeight,
+            ...theme,
+        });
+
+        // candles
+        let candleSeries = null;
+        if (C.mainPane.candles.length > 0) {
+            const candleType = C.candleStyle === 'bars'
+                ? LightweightCharts.BarSeries
+                : LightweightCharts.CandlestickSeries;
+            const candleOpts = C.candleStyle === 'hollow'
+                ? { upColor: 'transparent', downColor: '#f85149', borderVisible: true,
+                    borderUpColor: '#26a641', borderDownColor: '#f85149',
+                    wickUpColor: '#26a641', wickDownColor: '#f85149' }
+                : { upColor: '#26a641', downColor: '#f85149', borderVisible: false,
+                    wickUpColor: '#26a641', wickDownColor: '#f85149' };
+            candleSeries = chart.addSeries(candleType, candleOpts, 0);
+            candleSeries.setData(C.mainPane.candles);
+        }
+
+        class TimeRangeBgRenderer {
+            constructor(zones, chart) { this._zones = zones; this._chart = chart; }
+            draw() {}
+            drawBackground(target) {
+                target.useBitmapCoordinateSpace(({ context: ctx, bitmapSize }) => {
+                    const ts = this._chart.timeScale();
+                    const dpr = bitmapSize.width / (ctx.canvas.offsetWidth || 1);
+                    for (const z of this._zones) {
+                        const x1 = ts.timeToCoordinate(z.from);
+                        const x2 = ts.timeToCoordinate(z.to);
+                        if (x1 === null || x2 === null) continue;
+                        ctx.fillStyle = z.color;
+                        ctx.fillRect(Math.round(x1 * dpr), 0, Math.round((x2 - x1) * dpr), bitmapSize.height);
+                    }
+                });
+            }
+        }
+        class TimeRangeBgPrimitive {
+            constructor(zones, chart) {
+                this._view = { zOrder: () => 'bottom', renderer: () => new TimeRangeBgRenderer(zones, chart) };
+            }
+            updateAllViews() {}
+            paneViews() { return [this._view]; }
+        }
+
+        const SERIES_TYPES = {
+            line:        LightweightCharts.LineSeries,
+            histogram:   LightweightCharts.HistogramSeries,
+            area:        LightweightCharts.AreaSeries,
+            baseline:    LightweightCharts.BaselineSeries,
+            candlestick: LightweightCharts.CandlestickSeries,
+            bar:         LightweightCharts.BarSeries,
+        };
+
+        function addSeries(opts, paneIndex) {
+            const SeriesClass = SERIES_TYPES[opts.type];
+            if (!SeriesClass) return null;
+            const s = chart.addSeries(SeriesClass, opts.options || {}, paneIndex);
+            s.setData(opts.data || []);
+            return s;
+        }
+
+        function applyYFormat(seriesList, yFormat) {
+            if (!yFormat) return;
+            let fmt;
+            if      (yFormat === 'percent')  fmt = { type: 'percent', precision: 2 };
+            else if (yFormat === 'currency') fmt = { type: 'price', precision: 2, minMove: 0.01 };
+            else if (yFormat === 'volume')   fmt = { type: 'volume' };
+            else if (yFormat === 'bps')      fmt = { type: 'custom', formatter: v => `${(v * 10000).toFixed(1)} bps`, minMove: 0.0001 };
+            if (fmt) seriesList.forEach(s => s && s.applyOptions({ priceFormat: fmt }));
+        }
+
+        let firstOverlaySeries = null;
+        const pane0series = [];
+        C.mainPane.overlays.forEach(o => {
+            const s = addSeries(o, 0);
+            if (!firstOverlaySeries) firstOverlaySeries = s;
+            if (s) pane0series.push(s);
+        });
+        applyYFormat(pane0series, C.mainPane.yFormat);
+
+        if (C.mainPane.hlines.length > 0) {
+            const hlineAnchor = candleSeries || firstOverlaySeries;
+            if (hlineAnchor) C.mainPane.hlines.forEach(hl => hlineAnchor.createPriceLine(hl));
+        }
+        if (candleSeries && C.mainPane.markers.length > 0) {
+            LightweightCharts.createSeriesMarkers(candleSeries, C.mainPane.markers);
+        }
+        if (C.mainPane.bgZones?.length > 0) {
+            const anchor = candleSeries || firstOverlaySeries;
+            if (anchor) anchor.attachPrimitive(new TimeRangeBgPrimitive(C.mainPane.bgZones, chart));
+        }
+
+        C.subPanes.forEach((pane, idx) => {
+            const paneIndex = idx + 1;
+            let firstSeries = null;
+            const paneSeries = [];
+            pane.series.forEach(s => {
+                const series = addSeries(s, paneIndex);
+                if (!firstSeries) firstSeries = series;
+                if (series) paneSeries.push(series);
+            });
+            applyYFormat(paneSeries, pane.yFormat);
+            if (pane.hlines.length > 0 && firstSeries) {
+                pane.hlines.forEach(hl => firstSeries.createPriceLine(hl));
+            }
+            if (pane.yMin !== null && pane.yMax !== null && firstSeries) {
+                const yMin = pane.yMin, yMax = pane.yMax;
+                firstSeries.applyOptions({
+                    autoscaleInfoProvider: () => ({
+                        priceRange: { minValue: yMin, maxValue: yMax },
+                        margins: { above: 0, below: 0 }
+                    })
+                });
+            }
+            if (pane.bgZones?.length > 0 && firstSeries) {
+                firstSeries.attachPrimitive(new TimeRangeBgPrimitive(pane.bgZones, chart));
+            }
+            setTimeout(() => {
+                const panes = chart.panes();
+                if (panes[paneIndex]) panes[paneIndex].setHeight(pane.heightPx);
+            }, 0);
+        });
+
+        setTimeout(() => { chart.panes()[0]?.setHeight(C.mainPaneHeight); }, 0);
+
+        // pane labels
+        let cumTop = C.mainPaneHeight + 58; // header + ohlcv bar offset
+        C.subPanes.forEach(pane => {
+            if (pane.label) {
+                const lbl = document.createElement('div');
+                lbl.className = 'pane-label';
+                lbl.style.top = (cumTop + 4) + 'px';
+                lbl.textContent = pane.label;
+                cell.appendChild(lbl);
+            }
+            cumTop += pane.heightPx;
+        });
+
+        // OHLCV tooltip
+        if (candleSeries) {
+            chart.subscribeCrosshairMove(param => {
+                if (!param.time) { ohlcvEl.textContent = ''; return; }
+                const d = param.seriesData.get(candleSeries);
+                if (!d) return;
+                ohlcvEl.textContent =
+                    `O ${d.open?.toFixed(2)}  H ${d.high?.toFixed(2)}`
+                    + `  L ${d.low?.toFixed(2)}  C ${d.close?.toFixed(2)}`;
+            });
+        }
+
+        new ResizeObserver(() => {
+            chart.applyOptions({ width: container.clientWidth });
+        }).observe(container);
+
+        chart.timeScale().fitContent();
+    });
+})();
+</script>
+</body>
+</html>

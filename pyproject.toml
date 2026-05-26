@@ -1,0 +1,24 @@
+[build-system]
+requires = ["uv_build>=0.11.8,<0.12.0"]
+build-backend = "uv_build"
+
+[project]
+name = "lwcharts"
+version = "0.1.0"
+description = "Lightweight Python wrapper for TradingView's lightweight-charts"
+readme = "README.md"
+authors = [{ name = "Caymaar", email = "julesmourgues@gmail.com" }]
+requires-python = ">=3.10"
+license = { text = "MIT" }
+dependencies = ["pandas>=1.5"]
+
+[project.optional-dependencies]
+dev = ["ipython", "jupyter", "numpy", "pandas-stubs", "pytest"]
+
+[tool.uv]
+package = true
+
+[dependency-groups]
+dev = [
+    "fastparquet>=2026.5.0",
+]
