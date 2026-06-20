@@ -85,13 +85,35 @@ def series_to_line(
     s = s.sort_index()
 
     result = []
-    for i, (idx, val) in enumerate(s.items()):
-        if pd.isna(val):
-            continue
-        d: dict = {"time": _to_tv_time(idx), "value": float(val)}
-        if colors is not None and i < len(colors):
-            d["color"] = colors[i]
-        result.append(d)
+
+    if colors is not None:
+        # Histogram path — skip NaN, colors list is index-aligned
+        for i, (idx, val) in enumerate(s.items()):
+            if pd.isna(val):
+                continue
+            d: dict = {"time": _to_tv_time(idx), "value": float(val)}
+            if i < len(colors):
+                d["color"] = colors[i]
+            result.append(d)
+    else:
+        # Line/area/baseline path.
+        # NaN values between the first and last valid point are emitted as
+        # whitespace data {time} (no value field). LW-charts treats these as
+        # explicit gaps and does not draw a line across them.
+        # NaN before the first valid value or after the last are simply skipped.
+        valid = s.notna()
+        if not valid.any():
+            return []
+        first_valid = s[valid].index[0]
+        last_valid  = s[valid].index[-1]
+
+        for idx, val in s.items():
+            if pd.isna(val):
+                if first_valid < idx < last_valid:
+                    result.append({"time": _to_tv_time(idx)})
+            else:
+                result.append({"time": _to_tv_time(idx), "value": float(val)})
+
     return result
 
 
