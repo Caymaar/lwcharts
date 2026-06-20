@@ -1,5 +1,5 @@
 """
-Courbe de P&L — stratégie momentum sur ZTS.US.
+Courbe de P&L — stratégie momentum sur ASSET.C.
 
 Stratégie : long quand close > EMA 20, flat sinon (signal J-1).
   - Pane principal  : equity curve (area) + buy & hold en comparaison
@@ -15,7 +15,7 @@ Illustre :
 import pandas as pd
 from lwcharts import Chart, Subplot
 
-df = pd.read_parquet("examples/data/ZTS.US.parquet")
+df = pd.read_parquet("examples/data/ASSET.C.parquet")
 
 ema_20 = df["close"].ewm(span=20).mean()
 

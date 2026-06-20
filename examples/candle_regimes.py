@@ -11,7 +11,7 @@ Complété par bg_zones_from_series pour le fond de pane et un subplot RSI.
 import pandas as pd
 from lwcharts import Chart, Subplot
 
-df = pd.read_parquet("examples/data/ZTS.US.parquet").loc["2018-01-01":]
+df = pd.read_parquet("examples/data/ASSET.C.parquet").loc["2018-01-01":]
 
 ema_20  = df["close"].ewm(span=20).mean()
 ema_100 = df["close"].ewm(span=100).mean()

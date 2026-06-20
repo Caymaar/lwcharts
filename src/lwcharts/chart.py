@@ -200,14 +200,14 @@ class Chart:
     ) -> "Chart":
         open_col = close_col = None
         try:
-            open_col, _, _, close_col = detect_ohlc_cols(df)
+            open_col, _, _, close_col, volume_col = detect_ohlc_cols(df, add_volume=True)
         except ValueError:
-            pass
+            volume_col = col
 
         df_sorted = df.sort_index()
         data = []
         for idx, row in df_sorted.iterrows():
-            if pd.isna(row[col]):
+            if pd.isna(row[volume_col]):
                 continue
             bar_color = up_color
             if (
@@ -218,7 +218,7 @@ class Chart:
             ):
                 bar_color = up_color if row[close_col] >= row[open_col] else down_color
             time_val = _to_tv_time(row[time] if time else idx)
-            data.append({"time": time_val, "value": float(row[col]), "color": bar_color})
+            data.append({"time": time_val, "value": float(row[volume_col]), "color": bar_color})
 
         if position == "overlay":
             self._overlays.append(VolumeOverlayDef(data=data, up_color=up_color, down_color=down_color))

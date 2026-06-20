@@ -2,7 +2,7 @@
 import pandas as pd
 from lwcharts import Chart
 
-df = pd.read_parquet("data/ZQK.US.parquet")
+df = pd.read_parquet("data/ASSET.A.parquet")
 
 danger_mask = df["close"].pct_change().rolling(5).std() > 0.015
 

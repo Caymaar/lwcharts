@@ -1,5 +1,5 @@
 """
-Analyse technique complète — ZTS.US avec stacking de subplots.
+Analyse technique complète — ASSET.C avec stacking de subplots.
 
 Démontre la densité d'informations possible dans un seul Chart :
   - Bougies creux (hollow candles) + EMA 20/50/200
@@ -13,7 +13,7 @@ Démontre la densité d'informations possible dans un seul Chart :
 import pandas as pd
 from lwcharts import Chart, Subplot
 
-df = pd.read_parquet("examples/data/ZTS.US.parquet").loc["2019-01-01":]
+df = pd.read_parquet("examples/data/ASSET.C.parquet").loc["2019-01-01":]
 
 # ── indicateurs ───────────────────────────────────────────────────────────────
 ema_20  = df["close"].ewm(span=20).mean()
@@ -56,7 +56,7 @@ palette = {
 }
 
 chart = (
-    Chart("ZTS.US — Analyse technique complète (2019+)", theme="dark",
+    Chart("ASSET.C — Analyse technique complète (2019+)", theme="dark",
           height=1100, candle_style="hollow")
     .candles(df)
     .line(ema_20,  name="EMA 20",  color="#f0b429", width=1)

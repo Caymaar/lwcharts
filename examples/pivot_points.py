@@ -11,7 +11,7 @@ Deux approches complémentaires :
 import pandas as pd
 from lwcharts import Chart, Subplot
 
-df = pd.read_parquet("examples/data/ZTS.US.parquet").loc["2022-01-01":]
+df = pd.read_parquet("examples/data/ASSET.C.parquet").loc["2022-01-01":]
 
 # ── pivots hebdomadaires ──────────────────────────────────────────────────────
 weekly = df.resample("W-FRI").agg({"high": "max", "low": "min", "close": "last"})

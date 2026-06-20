@@ -9,7 +9,7 @@ Montre les trois formes d'input acceptées par .markers() :
 import pandas as pd
 from lwcharts import Chart, Subplot
 
-df = pd.read_parquet("examples/data/ZTS.US.parquet").loc["2019-01-01":]
+df = pd.read_parquet("examples/data/ASSET.C.parquet").loc["2019-01-01":]
 
 ema_20 = df["close"].ewm(span=20).mean()
 ema_50 = df["close"].ewm(span=50).mean()

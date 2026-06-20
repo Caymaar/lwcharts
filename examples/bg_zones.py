@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from lwcharts import Chart, Subplot
 
-df = pd.read_parquet("examples/data/ZQK.US.parquet")  # --- REPLACE WITH SYNTHETIC DATA ---
+df = pd.read_parquet("examples/data/ASSET.A.parquet")  # --- REPLACE WITH SYNTHETIC DATA ---
 
 # ── indicateurs ──────────────────────────────────────────────────────────────
 ema_20 = df["close"].ewm(span=20).mean()

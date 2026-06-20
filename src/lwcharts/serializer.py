@@ -85,35 +85,13 @@ def series_to_line(
     s = s.sort_index()
 
     result = []
-
-    if colors is not None:
-        # Histogram path — skip NaN, colors list is index-aligned
-        for i, (idx, val) in enumerate(s.items()):
-            if pd.isna(val):
-                continue
-            d: dict = {"time": _to_tv_time(idx), "value": float(val)}
-            if i < len(colors):
-                d["color"] = colors[i]
-            result.append(d)
-    else:
-        # Line/area/baseline path.
-        # NaN values between the first and last valid point are emitted as
-        # whitespace data {time} (no value field). LW-charts treats these as
-        # explicit gaps and does not draw a line across them.
-        # NaN before the first valid value or after the last are simply skipped.
-        valid = s.notna()
-        if not valid.any():
-            return []
-        first_valid = s[valid].index[0]
-        last_valid  = s[valid].index[-1]
-
-        for idx, val in s.items():
-            if pd.isna(val):
-                if first_valid < idx < last_valid:
-                    result.append({"time": _to_tv_time(idx)})
-            else:
-                result.append({"time": _to_tv_time(idx), "value": float(val)})
-
+    for i, (idx, val) in enumerate(s.items()):
+        if pd.isna(val):
+            continue
+        d: dict = {"time": _to_tv_time(idx), "value": float(val)}
+        if colors is not None and i < len(colors):
+            d["color"] = colors[i]
+        result.append(d)
     return result
 
 
@@ -134,18 +112,19 @@ def histogram_colors(
     return result
 
 
-def detect_ohlc_cols(df: pd.DataFrame) -> tuple[str, str, str, str]:
+def detect_ohlc_cols(df: pd.DataFrame, add_volume: bool = False) -> tuple[str, str, str, str]:
     cols_lower = {c.lower(): c for c in df.columns}
     open_col = cols_lower.get("open") or cols_lower.get("o")
     high_col = cols_lower.get("high") or cols_lower.get("h")
     low_col = cols_lower.get("low") or cols_lower.get("l")
     close_col = cols_lower.get("close") or cols_lower.get("c")
+    volume_col = (cols_lower.get("volume") or cols_lower.get("v")) if add_volume else None
     if not all([open_col, high_col, low_col, close_col]):
         raise ValueError(
             "Could not auto-detect OHLC columns. "
             "Pass explicit column names: open=, high=, low=, close="
         )
-    return open_col, high_col, low_col, close_col  # type: ignore[return-value]
+    return (open_col, high_col, low_col, close_col) if not add_volume else (open_col, high_col, low_col, close_col, volume_col)  # type: ignore[return-value]
 
 
 def _series_to_zones(series: pd.Series, palette: dict) -> list[dict]:

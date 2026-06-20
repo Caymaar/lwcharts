@@ -2,7 +2,7 @@
 import pandas as pd
 from lwcharts import Chart
 
-df = pd.read_parquet("examples/data/ZQK.US.parquet")
+df = pd.read_parquet("examples/data/ASSET.A.parquet")
 
 ema_20 = df["close"].ewm(span=20).mean()
 ema_50 = df["close"].ewm(span=50).mean()

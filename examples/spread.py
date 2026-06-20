@@ -1,5 +1,5 @@
 """
-Spread entre deux actifs — ZTS.US vs ZS.US (2018-2026).
+Spread entre deux actifs — ASSET.C vs ASSET.B (2018-2026).
 
 Pane principal : les deux closes normalisés à 100 (performance relative).
   - Fond coloré selon quel actif surperforme
@@ -16,8 +16,8 @@ Illustre :
 import pandas as pd
 from lwcharts import Chart, Subplot
 
-zts = pd.read_parquet("examples/data/ZTS.US.parquet")
-zs  = pd.read_parquet("examples/data/ZS.US.parquet")
+zts = pd.read_parquet("examples/data/ASSET.C.parquet")
+zs  = pd.read_parquet("examples/data/ASSET.B.parquet")
 
 # Intersection des dates de trading (les deux actifs ont le même calendrier ici)
 common = zts.index.intersection(zs.index)
@@ -42,8 +42,8 @@ zts_outperforms = zts_norm > zs_norm
 chart = (
     Chart("ZTS vs ZS — Performance relative (base 100)", theme="dark", height=750)
     # Pane principal : closes normalisés (pas de bougies)
-    .line(zts_norm, name="ZTS.US", color="#58a6ff", width=2)
-    .line(zs_norm,  name="ZS.US",  color="#f0b429", width=2)
+    .line(zts_norm, name="ASSET.C", color="#58a6ff", width=2)
+    .line(zs_norm,  name="ASSET.B",  color="#f0b429", width=2)
     .hline(100, color="rgba(139,148,158,0.3)", style="solid")
     # Fond coloré selon le leader
     .bg_zones_from_mask(

@@ -1,7 +1,7 @@
 """
 Close seul — séries de prix sans bougies.
 
-Quatre variantes sur le même jeu de données ZTS.US :
+Quatre variantes sur le même jeu de données ASSET.C :
   1. close_chart    : close brut en area, EMA overlay, hline au niveau IPO
   2. returns_chart  : returns cumulés (baseline autour de 0%)
   3. zscore_chart   : z-score glissant du close (oscillateur standalone)
@@ -13,8 +13,8 @@ afficher les autres.
 import pandas as pd
 from lwcharts import Chart, Subplot
 
-zts = pd.read_parquet("examples/data/ZTS.US.parquet")
-zs  = pd.read_parquet("examples/data/ZS.US.parquet")
+zts = pd.read_parquet("examples/data/ASSET.C.parquet")
+zs  = pd.read_parquet("examples/data/ASSET.B.parquet")
 
 # ── 1. Close brut avec EMA et niveau de référence ────────────────────────────
 ema_50   = zts["close"].ewm(span=50).mean()
@@ -22,7 +22,7 @@ ema_200  = zts["close"].ewm(span=200).mean()
 ipo_price = zts["close"].iloc[0]
 
 close_chart = (
-    Chart("ZTS.US — Close seul", theme="dark", height=500)
+    Chart("ASSET.C — Close seul", theme="dark", height=500)
     .area(
         zts["close"],
         name="Close",
@@ -40,7 +40,7 @@ close_chart = (
 cum_returns = ((1 + zts["close"].pct_change().fillna(0)).cumprod() - 1) * 100
 
 returns_chart = (
-    Chart("ZTS.US — Returns cumulés (%)", theme="dark", height=450, y_format="percent")
+    Chart("ASSET.C — Returns cumulés (%)", theme="dark", height=450, y_format="percent")
     .baseline(cum_returns, base=0.0, name="Returns cumulés")
     .hline(0, color="rgba(139,148,158,0.3)", style="solid")
 )
@@ -53,7 +53,7 @@ zscore = (
 ).rename("Z-score 252j")
 
 zscore_chart = (
-    Chart("ZTS.US — Z-score du close (fenêtre 252j)", theme="dark", height=450)
+    Chart("ASSET.C — Z-score du close (fenêtre 252j)", theme="dark", height=450)
     .line(zscore, color="#c084fc", width=1)
     .hline( 2, color="rgba(248,81,73,0.5)",   style="dashed", label="+2σ")
     .hline( 1, color="rgba(248,81,73,0.25)",  style="dotted", label="+1σ")
@@ -78,8 +78,8 @@ zs_vol  = zs.loc[common,  "close"].pct_change().rolling(21).std() * 100
 
 multi_chart = (
     Chart("ZTS vs ZS — Closes normalisés (base 100)", theme="dark", height=650)
-    .line(zts_n, name="ZTS.US", color="#58a6ff", width=2)
-    .line(zs_n,  name="ZS.US",  color="#f0b429", width=2)
+    .line(zts_n, name="ASSET.C", color="#58a6ff", width=2)
+    .line(zs_n,  name="ASSET.B",  color="#f0b429", width=2)
     .hline(100, color="rgba(139,148,158,0.3)", style="solid")
     .bg_zones_from_mask(
         zts_n > zs_n,

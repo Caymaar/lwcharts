@@ -2,7 +2,7 @@
 import pandas as pd
 from lwcharts import Chart, Subplot
 
-df_daily = pd.read_parquet("examples/data/ZQK.US.parquet")  # --- REPLACE WITH SYNTHETIC DATA ---
+df_daily = pd.read_parquet("examples/data/ASSET.A.parquet")  # --- REPLACE WITH SYNTHETIC DATA ---
 
 # Resample en weekly (chaque lundi)
 df_weekly = df_daily.resample("W-MON").agg(

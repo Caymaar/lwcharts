@@ -28,10 +28,10 @@ def make_chart(ticker: str) -> Chart:
 
 dash = (
     Dashboard(title="Equity Dashboard", cols=2, row_height=450)
-    .add(make_chart("ZQK.US"))
-    .add(make_chart("ZS.US"))
-    .add(make_chart("ZTS.US"))
-    .add(make_chart("ZU.US"))
+    .add(make_chart("ASSET.A"))
+    .add(make_chart("ASSET.B"))
+    .add(make_chart("ASSET.C"))
+    .add(make_chart("ASSET.D"))
 )
 
 dash.serve()
