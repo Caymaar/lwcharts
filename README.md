@@ -1,4 +1,4 @@
-![PyPI](https://img.shields.io/pypi/v/lwcharts) ![license](https://img.shields.io/badge/license-MIT-green) ![python](https://img.shields.io/badge/python-3.10+-lightgrey)
+ ![license](https://img.shields.io/badge/license-MIT-green) ![python](https://img.shields.io/badge/python-3.10+-lightgrey) ![PyPI](https://img.shields.io/pypi/v/lwcharts) [![PyPI Downloads](https://static.pepy.tech/personalized-badge/lwcharts?period=total&units=INTERNATIONAL_SYSTEM&left_color=BLACK&right_color=GREEN&left_text=downloads)](https://pepy.tech/projects/lwcharts)
 
 # lwcharts
 
